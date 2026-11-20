@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Hotel - Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="stars"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🏨</span>
+                <span class="logo-text">Hotel KK By Spree</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="{{ url_for('login') }}" class="nav-btn">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Rajkot's Premier Hotel Management
+            </div>
+            <h1 class="hero-title">
+                Hotel KK By
+                <span class="gradient-text">Spree Rajkot</span>
+                <br>Management System
+            </h1>
+            <p class="hero-subtitle">
+                Streamlined operations for Hotel KK By Spree Rajkot. 
+                Unit No 56, Kalawad Road, near Kotecha Circle, Kailash Nagar, Gujarat 360007
+            </p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">
+                    <span>Staff Login</span>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="{{ url_for('guest_booking') }}" class="btn btn-secondary">
+                    <span>Book a Room</span>
+                </a>
+                <a href="#features" class="btn btn-secondary">
+                    <span>Learn More</span>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">4 Types</div>
+                    <div class="stat-label">Room Categories</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Front Desk</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">4.9/5</div>
+                    <div class="stat-label">Guest Rating</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="floating-card card-1">
+                <div class="card-icon">🏨</div>
+                <div class="card-text">
+                    <div class="card-title">Current Occupancy</div>
+                    <div class="card-value">85% Booked</div>
+                </div>
+            </div>
+            <div class="floating-card card-2">
+                <div class="card-icon">💰</div>
+                <div class="card-text">
+                    <div class="card-title">Room Rates</div>
+                    <div class="card-value">₹2,207 - ₹3,772</div>
+                </div>
+            </div>
+            <div class="floating-card card-3">
+                <div class="card-icon">⭐</div>
+                <div class="card-text">
+                    <div class="card-title">Check-in/out</div>
+                    <div class="card-value">2:00 PM / 12:00 PM</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2 class="section-title">Hotel Management Features</h2>
+            <p class="section-subtitle">Complete control over your hotel operations</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card" data-aos="fade-up">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">👤</div>
+                    <div class="icon-glow"></div>
+                </div>
+                <h3>Front Desk Operations</h3>
+                <p>Manage reservations for Standard Queen, Standard Twin, Superior Queen, and Suite rooms with real-time availability and dynamic pricing.</p>
+                <ul class="feature-list">
+                    <li>✓ Visual room maps & availability</li>
+                    <li>✓ Quick check-in (2:00 PM) / check-out (12:00 PM)</li>
+                    <li>✓ Guest profile management</li>
+                    <li>✓ Dynamic pricing (₹2,207 - ₹3,772)</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">📊</div>
+                    <div class="icon-glow"></div>
+                </div>
+                <h3>Management Dashboard</h3>
+                <p>Comprehensive oversight with 24-hour front desk management, staff scheduling, and approval workflows for guest notes.</p>
+                <ul class="feature-list">
+                    <li>✓ Real-time occupancy analytics</li>
+                    <li>✓ Staff duty scheduling</li>
+                    <li>✓ Guest note approvals</li>
+                    <li>✓ Revenue tracking & reporting</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">👥</div>
+                    <div class="icon-glow"></div>
+                </div>
+                <h3>HR Management</h3>
+                <p>Complete personnel management with role-based access control for Front Desk, Management, and HR staff.</p>
+                <ul class="feature-list">
+                    <li>✓ Role & access level management</li>
+                    <li>✓ Add/remove personnel</li>
+                    <li>✓ Duty roster assignments</li>
+                    <li>✓ View-only mode when off-duty</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="about-content">
+            <div class="about-text">
+                <h2 class="section-title">Hotel KK By Spree Rajkot</h2>
+                <p>Our comprehensive management system integrates all aspects of hotel operations - from front desk to HR. Located at Unit No 56, Kalawad Road, near Kotecha Circle, Kailash Nagar, we provide excellence in hospitality with modern technology.</p>
+                <div class="benefits">
+                    <div class="benefit">
+                        <div class="benefit-icon">🏨</div>
+                        <div class="benefit-text">
+                            <h4>Room Categories</h4>
+                            <p>Standard Queen (23m²), Standard Twin (23m²), Superior Queen (28m²), Suite (42m²)</p>
+                        </div>
+                    </div>
+                    <div class="benefit">
+                        <div class="benefit-icon">🌟</div>
+                        <div class="benefit-text">
+                            <h4>Premium Amenities</h4>
+                            <p>Free WiFi, Fitness Center, 24-hour Front Desk, Restaurant, Room Service, Free Parking</p>
+                        </div>
+                    </div>
+                    <div class="benefit">
+                        <div class="benefit-icon">📞</div>
+                        <div class="benefit-text">
+                            <h4>Contact & Support</h4>
+                            <p>Phone: 095120 20653 | Check-in: 2:00 PM | Check-out: 12:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK By Spree</span>
+                </div>
+                <p>Unit No 56, Kalawad Road, near Kotecha Circle, Kailash Nagar, Rajkot, Gujarat 360007</p>
+                <p>Phone: 095120 20653 | Email: info@hotelkkbyspree.com</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Hotel KK By Spree Rajkot - Management System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

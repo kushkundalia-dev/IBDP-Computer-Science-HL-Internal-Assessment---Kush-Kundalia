@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Status - Hotel KK By Spree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="stars"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="user-role">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('frontdesk_dashboard') }}" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('guests_list') }}" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">All Guests</span>
+                </a>
+                <a href="{{ url_for('reservations_list') }}" class="nav-item">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Reservations</span>
+                </a>
+                <a href="{{ url_for('rooms_status') }}" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Room Status</span>
+                </a>
+                <a href="{{ url_for('reports') }}" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="nav-item logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Room Status</h1>
+                    <p class="page-subtitle">Real-time room availability and occupancy</p>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Rooms</span>
+                        <span class="stat-icon">🏠</span>
+                    </div>
+                    <div class="stat-value">{{ total_rooms }}</div>
+                    <div class="stat-change">All rooms</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Occupied</span>
+                        <span class="stat-icon">🔴</span>
+                    </div>
+                    <div class="stat-value">{{ occupied }}</div>
+                    <div class="stat-change negative">Currently occupied</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Available</span>
+                        <span class="stat-icon">🟢</span>
+                    </div>
+                    <div class="stat-value">{{ available }}</div>
+                    <div class="stat-change positive">Ready to book</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Occupancy Rate</span>
+                        <span class="stat-icon">📊</span>
+                    </div>
+                    <div class="stat-value">{{ '%.0f'|format((occupied / total_rooms * 100) if total_rooms > 0 else 0) }}%</div>
+                    <div class="stat-change">Current rate</div>
+                </div>
+            </div>
+
+            <!-- Room Grid -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">All Rooms</h2>
+                    <div style="display: flex; gap: 15px; align-items: center; font-size: 0.9rem;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="width: 12px; height: 12px; background: #22c55e; border-radius: 3px; display: inline-block;"></span>
+                            <span>Available</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="width: 12px; height: 12px; background: #ef4444; border-radius: 3px; display: inline-block;"></span>
+                            <span>Occupied</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="width: 12px; height: 12px; background: #3b82f6; border-radius: 3px; display: inline-block;"></span>
+                            <span>Arriving</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="width: 12px; height: 12px; background: #f59e0b; border-radius: 3px; display: inline-block;"></span>
+                            <span>Departing</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px;">
+                    {% for item in room_status_list %}
+                    <div class="room-card {{ item.status }}" style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 20px; border: 2px solid 
+                        {% if item.status == 'available' %}#22c55e
+                        {% elif item.status == 'occupied' %}#ef4444
+                        {% elif item.status == 'arriving' %}#3b82f6
+                        {% elif item.status == 'departing' %}#f59e0b
+                        {% endif %}; transition: all 0.3s;">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <div>
+                                <div style="font-size: 1.8rem; font-weight: 700; color: #fff;">{{ item.room.room_number }}</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">{{ item.room.category.name }}</div>
+                            </div>
+                            <div style="font-size: 2rem;">
+                                {% if item.status == 'available' %}🟢
+                                {% elif item.status == 'occupied' %}🔴
+                                {% elif item.status == 'arriving' %}🔵
+                                {% elif item.status == 'departing' %}🟠
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;
+                                {% if item.status == 'available' %}background: rgba(34, 197, 94, 0.2); color: #86efac;
+                                {% elif item.status == 'occupied' %}background: rgba(239, 68, 68, 0.2); color: #fca5a5;
+                                {% elif item.status == 'arriving' %}background: rgba(59, 130, 246, 0.2); color: #93c5fd;
+                                {% elif item.status == 'departing' %}background: rgba(245, 158, 11, 0.2); color: #fcd34d;
+                                {% endif %}">
+                                {{ item.status }}
+                            </div>
+                        </div>
+
+                        {% if item.guest_name %}
+                        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; margin-bottom: 10px;">
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-bottom: 3px;">Guest</div>
+                            <div style="color: #fff; font-weight: 600;">{{ item.guest_name }}</div>
+                        </div>
+                        {% endif %}
+
+                        {% if item.reservation %}
+                        <div style="display: flex; gap: 10px; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+                            <div style="flex: 1;">
+                                <div style="margin-bottom: 2px;">Check-in</div>
+                                <div style="color: #fff; font-weight: 600;">{{ item.reservation.check_in_date.strftime('%d %b') }}</div>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="margin-bottom: 2px;">Check-out</div>
+                                <div style="color: #fff; font-weight: 600;">{{ item.reservation.check_out_date.strftime('%d %b') }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                                <span style="color: rgba(255,255,255,0.6);">₹{{ '{:,.0f}'.format(item.room.category.base_price) }}/night</span>
+                                {% if item.reservation %}
+                                <a href="{{ url_for('guest_profile', guest_id=item.reservation.guest.id) }}" class="btn-icon" style="font-size: 0.8rem; padding: 6px 10px;">View Guest</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</body>
+</html>

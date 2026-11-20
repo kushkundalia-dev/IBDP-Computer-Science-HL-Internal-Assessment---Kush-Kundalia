@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guests - Hotel KK By Spree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="user-role">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('frontdesk_dashboard') }}" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('guests_list') }}" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">All Guests</span>
+                </a>
+                <a href="{{ url_for('reservations_list') }}" class="nav-item">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Reservations</span>
+                </a>
+                <a href="{{ url_for('rooms_status') }}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Room Status</span>
+                </a>
+                <a href="{{ url_for('reports') }}" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="nav-item logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 20px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Guest Database</h1>
+                <p class="page-subtitle">All guest records and booking history</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Total Guests</span>
+                    <span class="stat-icon">👥</span>
+                </div>
+                <div class="stat-value">{{ total_guests }}</div>
+                <div class="stat-change">All time</div>
+            </div>
+        </div>
+
+        <!-- Guest List -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">All Guests</h2>
+            </div>
+
+            <!-- Search Bar -->
+            <form method="GET" action="{{ url_for('guests_list') }}">
+                <div class="search-bar">
+                    <input type="text" name="search" class="search-input" placeholder="Search by name, email, or phone..." value="{{ search }}">
+                    <button type="submit" class="btn btn-secondary">Search</button>
+                    {% if search %}
+                    <a href="{{ url_for('guests_list') }}" class="btn btn-secondary">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- Guests Table -->
+            {% if guests %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>ID Proof</th>
+                        <th>Total Stays</th>
+                        <th>Last Visit</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guest in guests %}
+                    <tr>
+                        <td>
+                            <strong>{{ guest.first_name }} {{ guest.last_name }}</strong>
+                        </td>
+                        <td>
+                            {% if guest.email %}<div>📧 {{ guest.email }}</div>{% endif %}
+                            <div>📱 {{ guest.phone }}</div>
+                        </td>
+                        <td>
+                            {% if guest.id_proof_type %}
+                                {{ guest.id_proof_type }}<br>
+                                <small style="color: rgba(255,255,255,0.5);">{{ guest.id_proof_number }}</small>
+                            {% else %}
+                                <span style="color: rgba(255,255,255,0.4);">Not provided</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-info">{{ guest.total_stays }} stays</span>
+                        </td>
+                        <td>
+                            {% if guest.last_visit %}
+                                {{ guest.last_visit.strftime('%d %b %Y') }}
+                            {% else %}
+                                <span style="color: rgba(255,255,255,0.4);">Never</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('guest_profile', guest_id=guest.id) }}" class="btn-icon">View</a>
+                                {% if current_user.can_edit() %}
+                                <a href="{{ url_for('edit_guest', guest_id=guest.id) }}" class="btn-icon">Edit</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">👥</div>
+                <h3>No guests found</h3>
+                <p>{% if search %}Try adjusting your search terms{% else %}Start by adding your first guest{% endif %}</p>
+                {% if current_user.can_edit() and not search %}
+                <a href="{{ url_for('add_guest') }}" class="btn btn-primary" style="margin-top: 20px;">+ Add First Guest</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </main>
+    </div>
+</body>
+</html>

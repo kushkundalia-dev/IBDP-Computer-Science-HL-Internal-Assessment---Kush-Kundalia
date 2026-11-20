@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard - Hotel KK By Spree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="stars"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="user-role">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('frontdesk_dashboard') }}" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('guests_list') }}" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">All Guests</span>
+                </a>
+                <a href="{{ url_for('reservations_list') }}" class="nav-item">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Reservations</span>
+                </a>
+                <a href="{{ url_for('rooms_status') }}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Room Status</span>
+                </a>
+                <a href="{{ url_for('reports') }}" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="nav-item logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Manager Dashboard</h1>
+                    <p class="page-subtitle">Welcome back, {{ current_user.first_name }}! Manage your hotel operations.</p>
+                </div>
+            </div>
+
+            <div class="page-content">
+                <!-- Staff Duty Management -->
+                <div class="content-card">
+                    <div style="padding: 30px;">
+                        <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 25px; color: #e0e7ff;">
+                            <span style="font-size: 1.5rem; margin-right: 10px;">👥</span>
+                            Front Desk Staff Duty Management
+                        </h3>
+                        
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Staff Member</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Current Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for staff in front_desk_staff %}
+                                    <tr>
+                                        <td>
+                                            <div class="guest-name">
+                                                <div class="guest-avatar">
+                                                    {{ staff.first_name[0] }}{{ staff.last_name[0] }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ staff.first_name }} {{ staff.last_name }}</strong>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ staff.email }}</td>
+                                        <td>{{ staff.phone }}</td>
+                                        <td>
+                                            {% if staff.is_on_duty %}
+                                                <span class="badge badge-success">✅ On Duty</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">🔴 Off Duty</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                {% if staff.is_on_duty %}
+                                                    <form method="post" action="{{ url_for('toggle_duty', user_id=staff.id) }}" style="display: inline;">
+                                                        <button type="submit" class="btn-icon" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3);">
+                                                            🔴 Mark Off Duty
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    <form method="post" action="{{ url_for('toggle_duty', user_id=staff.id) }}" style="display: inline;">
+                                                        <button type="submit" class="btn-icon" style="background: rgba(34, 197, 94, 0.2); color: #86efac; border-color: rgba(34, 197, 94, 0.3);">
+                                                            ✅ Mark On Duty
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not front_desk_staff %}
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: #999; padding: 40px;">
+                                            No front desk staff found
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shift Schedule -->
+                <div class="content-card" style="margin-top: 30px;">
+                    <div style="padding: 30px;">
+                        <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 25px; color: #e0e7ff;">
+                            <span style="font-size: 1.5rem; margin-right: 10px;">📅</span>
+                            Assign Shift Schedule
+                        </h3>
+                        
+                        <form method="post" action="{{ url_for('assign_schedule') }}" style="background: rgba(255, 255, 255, 0.03); padding: 25px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a5b4fc; font-weight: 500;">Staff Member</label>
+                                    <select name="user_id" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                                        <option value="" style="background: #1e1b4b; color: #fff;">Select Staff</option>
+                                        {% for staff in front_desk_staff %}
+                                        <option value="{{ staff.id }}" style="background: #1e1b4b; color: #fff;">{{ staff.first_name }} {{ staff.last_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a5b4fc; font-weight: 500;">Shift Date</label>
+                                    <input type="date" name="shift_date" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a5b4fc; font-weight: 500;">Start Time</label>
+                                    <input type="time" name="shift_start" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a5b4fc; font-weight: 500;">End Time</label>
+                                    <input type="time" name="shift_end" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                                <span style="font-size: 1.2rem; margin-right: 6px;">➕</span>
+                                Assign Shift
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Upcoming Schedules -->
+                <div class="content-card" style="margin-top: 30px;">
+                    <div style="padding: 30px;">
+                        <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 25px; color: #e0e7ff;">
+                            <span style="font-size: 1.5rem; margin-right: 10px;">🗓️</span>
+                            Upcoming Shifts
+                        </h3>
+                        
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Staff Member</th>
+                                        <th>Date</th>
+                                        <th>Shift Time</th>
+                                        <th>Assigned By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for schedule in upcoming_schedules %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ schedule.user.first_name }} {{ schedule.user.last_name }}</strong>
+                                        </td>
+                                        <td>{{ schedule.shift_date.strftime('%d %b %Y') }}</td>
+                                        <td>{{ schedule.shift_start.strftime('%I:%M %p') }} - {{ schedule.shift_end.strftime('%I:%M %p') }}</td>
+                                        <td>{{ schedule.assigner.first_name if schedule.assigner else '-' }}</td>
+                                        <td>
+                                            <form method="post" action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}" style="display: inline;">
+                                                <button type="submit" class="btn-icon" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3);" onclick="return confirm('Delete this shift?')">
+                                                    🗑️ Delete
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not upcoming_schedules %}
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: #999; padding: 40px;">
+                                            No upcoming shifts scheduled
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+

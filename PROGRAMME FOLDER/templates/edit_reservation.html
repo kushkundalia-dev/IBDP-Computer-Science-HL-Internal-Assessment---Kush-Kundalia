@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Reservation - Hotel KK By Spree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="stars"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="user-role">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('frontdesk_dashboard') }}" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('guests_list') }}" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">All Guests</span>
+                </a>
+                <a href="{{ url_for('reservations_list') }}" class="nav-item active">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Reservations</span>
+                </a>
+                <a href="{{ url_for('rooms_status') }}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Room Status</span>
+                </a>
+                <a href="{{ url_for('reports') }}" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="nav-item logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" style="margin-bottom: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border-left: 3px solid #6366f1; border-radius: 8px; color: #fff;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Edit Reservation</h1>
+                    <p class="page-subtitle">Modify reservation details</p>
+                </div>
+                <a href="{{ url_for('reservations_list') }}" class="btn btn-secondary">← Back to Reservations</a>
+            </div>
+
+            <!-- Reservation Info Card -->
+            <div class="content-card" style="margin-bottom: 30px;">
+                <div style="padding: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px;">Reservation Code</div>
+                            <div style="color: #fff; font-size: 1.3rem; font-weight: 700;">{{ reservation.reservation_code }}</div>
+                        </div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px;">Guest</div>
+                            <div style="color: #fff; font-size: 1.1rem; font-weight: 600;">{{ reservation.guest.first_name }} {{ reservation.guest.last_name }}</div>
+                            <div style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">{{ reservation.guest.phone }}</div>
+                        </div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px;">Room</div>
+                            <div style="color: #fff; font-size: 1.1rem; font-weight: 600;">Room {{ reservation.room.room_number }}</div>
+                            <div style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">{{ reservation.room.category.name }}</div>
+                        </div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px;">Status</div>
+                            <div>
+                                {% if reservation.status == 'confirmed' %}
+                                    <span class="badge badge-info">Confirmed</span>
+                                {% elif reservation.status == 'checked_in' %}
+                                    <span class="badge badge-success">Checked In</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">Reservation Details</h2>
+                </div>
+
+                <form method="POST" style="padding: 30px;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">Check-in Date *</label>
+                            <input type="date" name="check_in" class="form-input" required value="{{ reservation.check_in_date.strftime('%Y-%m-%d') }}" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%; color-scheme: dark;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">Check-out Date *</label>
+                            <input type="date" name="check_out" class="form-input" required value="{{ reservation.check_out_date.strftime('%Y-%m-%d') }}" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%; color-scheme: dark;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">Number of Adults *</label>
+                            <input type="number" name="num_adults" class="form-input" value="{{ reservation.num_adults }}" min="1" required style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">Number of Children</label>
+                            <input type="number" name="num_children" class="form-input" value="{{ reservation.num_children }}" min="0" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">Special Requests</label>
+                        <textarea name="special_requests" class="form-input" rows="4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%; resize: vertical;">{{ reservation.special_requests or '' }}</textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+                        <a href="{{ url_for('reservations_list') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .form-input:hover {
+            border-color: rgba(139, 92, 246, 0.4) !important;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.6) !important;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+    </style>
+</body>
+</html>

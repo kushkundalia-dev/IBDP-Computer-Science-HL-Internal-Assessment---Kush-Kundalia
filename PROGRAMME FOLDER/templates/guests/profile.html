@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ guest.first_name }} {{ guest.last_name }} - Guest Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="user-role">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('frontdesk_dashboard') }}" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('guests_list') }}" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">All Guests</span>
+                </a>
+                <a href="{{ url_for('reservations_list') }}" class="nav-item">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Reservations</span>
+                </a>
+                <a href="{{ url_for('rooms_status') }}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Room Status</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="nav-item logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 20px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">{{ guest.first_name }} {{ guest.last_name }}</h1>
+                <p class="page-subtitle">Guest Profile</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                {% if current_user.can_edit() %}
+                <a href="{{ url_for('add_guest_note', guest_id=guest.id) }}" class="btn btn-secondary">+ Add Note</a>
+                <a href="{{ url_for('edit_guest', guest_id=guest.id) }}" class="btn btn-primary">Edit Profile</a>
+                {% endif %}
+                <a href="{{ url_for('guests_list') }}" class="btn btn-secondary">← Back</a>
+            </div>
+        </div>
+
+        <!-- Guest Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Total Bookings</span>
+                    <span class="stat-icon">🏨</span>
+                </div>
+                <div class="stat-value">{{ guest.reservations|length }}</div>
+                <div class="stat-change">All time reservations</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Total Spent</span>
+                    <span class="stat-icon">💰</span>
+                </div>
+                <div class="stat-value">₹{{ '{:,.0f}'.format(guest.total_spent) }}</div>
+                <div class="stat-change">Lifetime value</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Last Stay</span>
+                    <span class="stat-icon">📅</span>
+                </div>
+                <div class="stat-value" style="font-size: 1.5rem;">
+                    {% if guest.last_visit %}
+                        {{ guest.last_visit.strftime('%d %b %Y') }}
+                    {% else %}
+                        Never
+                    {% endif %}
+                </div>
+                <div class="stat-change">Most recent</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Member Since</span>
+                    <span class="stat-icon">⭐</span>
+                </div>
+                <div class="stat-value" style="font-size: 1.5rem;">{{ guest.created_at.strftime('%d %b %Y') }}</div>
+                <div class="stat-change">First booking date</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <!-- Guest Information -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">Contact Information</h2>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px;">Email</div>
+                        <div style="color: #fff; font-size: 1.1rem;">{{ guest.email or 'Not provided' }}</div>
+                    </div>
+
+                    <div>
+                        <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px;">Phone</div>
+                        <div style="color: #fff; font-size: 1.1rem;">{{ guest.phone }}</div>
+                    </div>
+
+                    <div>
+                        <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px;">ID Proof</div>
+                        <div style="color: #fff; font-size: 1.1rem;">
+                            {% if guest.id_proof_type %}
+                                {{ guest.id_proof_type }}<br>
+                                <small style="color: rgba(255,255,255,0.5);">{{ guest.id_proof_number }}</small>
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px;">Address</div>
+                        <div style="color: #fff; font-size: 1.1rem;">{{ guest.address or 'Not provided' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guest Notes -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">Notes & Comments</h2>
+                </div>
+
+                {% if notes %}
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        {% for note in notes %}
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border-left: 3px solid {{ 'rgba(34, 197, 94, 0.5)' if note.is_approved else 'rgba(251, 146, 60, 0.5)' }};">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.8); font-weight: 600;">{{ note.creator.first_name }} {{ note.creator.last_name }}</div>
+                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">{{ note.created_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+                                </div>
+                                {% if note.is_approved %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </div>
+                            <div style="color: rgba(255,255,255,0.9); line-height: 1.6;">{{ note.note_text }}</div>
+                            {% if note.is_approved and note.approver %}
+                            <div style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 10px;">
+                                Approved by {{ note.approver.first_name }} {{ note.approver.last_name }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3>No notes yet</h3>
+                        <p>Add notes about this guest's preferences or special requests</p>
+                        {% if current_user.can_edit() %}
+                        <a href="{{ url_for('add_guest_note', guest_id=guest.id) }}" class="btn btn-primary" style="margin-top: 20px;">+ Add First Note</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Reservations -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">Reservation History</h2>
+            </div>
+
+            {% if guest.reservations %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Reservation Code</th>
+                            <th>Room</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in guest.reservations %}
+                        <tr>
+                            <td><strong>{{ reservation.reservation_code }}</strong></td>
+                            <td>Room {{ reservation.room.room_number }} - {{ reservation.room.category.name }}</td>
+                            <td>{{ reservation.check_in_date.strftime('%d %b %Y') }}</td>
+                            <td>{{ reservation.check_out_date.strftime('%d %b %Y') }}</td>
+                            <td>₹{{ '{:,.0f}'.format(reservation.total_amount) }}</td>
+                            <td>
+                                {% if reservation.status == 'confirmed' %}
+                                    <span class="badge badge-info">Confirmed</span>
+                                {% elif reservation.status == 'checked_in' %}
+                                    <span class="badge badge-success">Checked In</span>
+                                {% elif reservation.status == 'checked_out' %}
+                                    <span class="badge badge-success">Completed</span>
+                                {% else %}
+                                    <span class="badge badge-danger">{{ reservation.status.title() }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📅</div>
+                    <h3>No reservations yet</h3>
+                    <p>This guest has not made any reservations</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+    </div>
+</body>
+</html>

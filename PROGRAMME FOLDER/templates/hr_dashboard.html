@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Dashboard - Hotel KK By Spree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="stars"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="user-role">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('hr_dashboard') }}" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Staff Management</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="nav-item logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">HR Manager Dashboard</h1>
+                    <p class="page-subtitle">Manage staff, roles, and access levels</p>
+                </div>
+                <div>
+                    <button onclick="document.getElementById('addStaffModal').style.display='flex'" class="btn btn-primary" style="padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                        <span style="font-size: 1.2rem; margin-right: 6px;">➕</span>
+                        Add New Staff
+                    </button>
+                </div>
+            </div>
+
+            <div class="page-content">
+                <!-- All Staff List -->
+                <div class="content-card">
+                    <div style="padding: 30px;">
+                        <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 25px; color: #e0e7ff;">
+                            <span style="font-size: 1.5rem; margin-right: 10px;">👨‍💼</span>
+                            All Personnel
+                        </h3>
+                        
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Staff Member</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for staff in all_staff %}
+                                    <tr>
+                                        <td>
+                                            <div class="guest-name">
+                                                <div class="guest-avatar">
+                                                    {{ staff.first_name[0] }}{{ staff.last_name[0] }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ staff.first_name }} {{ staff.last_name }}</strong><br>
+                                                    <small style="color: #666;">@{{ staff.username }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ staff.email }}</td>
+                                        <td>{{ staff.phone }}</td>
+                                        <td>
+                                            <span class="badge {% if staff.role.name == 'HR Manager' %}badge-danger{% elif staff.role.name == 'General Manager' %}badge-warning{% else %}badge-info{% endif %}">
+                                                {{ staff.role.name }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if staff.is_active %}
+                                                <span class="badge badge-success">✅ Active</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">🔴 Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button onclick="openEditModal({{ staff.id }}, '{{ staff.first_name }}', '{{ staff.last_name }}', '{{ staff.email }}', '{{ staff.phone }}', {{ staff.role_id }}, {{ staff.is_active|lower }})" class="btn-icon" title="Edit">
+                                                    ✏️
+                                                </button>
+                                                {% if staff.id != current_user.id %}
+                                                <form method="post" action="{{ url_for('delete_staff', user_id=staff.id) }}" style="display: inline;" onsubmit="return confirm('Delete {{ staff.first_name }} {{ staff.last_name }}? This action cannot be undone.')">
+                                                    <button type="submit" class="btn-icon" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3);" title="Delete">
+                                                        🗑️
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not all_staff %}
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: #999; padding: 40px;">
+                                            No staff found
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Staff Modal -->
+    <div id="addStaffModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding: 40px; border-radius: 20px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+            <h2 style="color: #e0e7ff; margin-bottom: 30px; font-size: 1.5rem;">➕ Add New Staff Member</h2>
+            
+            <form method="post" action="{{ url_for('add_staff') }}">
+                <div style="display: grid; gap: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">First Name</label>
+                        <input type="text" name="first_name" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Last Name</label>
+                        <input type="text" name="last_name" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Email</label>
+                        <input type="email" name="email" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Phone</label>
+                        <input type="tel" name="phone" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Password</label>
+                        <input type="password" name="password" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Role</label>
+                        <select name="role_id" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                            {% for role in roles %}
+                            <option value="{{ role.id }}" style="background: #1e1b4b; color: #fff;">{{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                        ✅ Add Staff
+                    </button>
+                    <button type="button" onclick="document.getElementById('addStaffModal').style.display='none'" class="btn btn-secondary" style="flex: 1; padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                        ✕ Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Staff Modal -->
+    <div id="editStaffModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding: 40px; border-radius: 20px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+            <h2 style="color: #e0e7ff; margin-bottom: 30px; font-size: 1.5rem;">✏️ Edit Staff Member</h2>
+            
+            <form method="post" id="editStaffForm">
+                <div style="display: grid; gap: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">First Name</label>
+                        <input type="text" name="first_name" id="edit_first_name" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Last Name</label>
+                        <input type="text" name="last_name" id="edit_last_name" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Email</label>
+                        <input type="email" name="email" id="edit_email" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Phone</label>
+                        <input type="tel" name="phone" id="edit_phone" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Role</label>
+                        <select name="role_id" id="edit_role_id" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                            {% for role in roles %}
+                            <option value="{{ role.id }}" style="background: #1e1b4b; color: #fff;">{{ role.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; color: #a5b4fc; font-weight: 500;">Status</label>
+                        <select name="is_active" id="edit_is_active" required class="form-input" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                            <option value="1" style="background: #1e1b4b; color: #fff;">Active</option>
+                            <option value="0" style="background: #1e1b4b; color: #fff;">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                        ✅ Save Changes
+                    </button>
+                    <button type="button" onclick="document.getElementById('editStaffModal').style.display='none'" class="btn btn-secondary" style="flex: 1; padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                        ✕ Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal(id, firstName, lastName, email, phone, roleId, isActive) {
+            document.getElementById('edit_first_name').value = firstName;
+            document.getElementById('edit_last_name').value = lastName;
+            document.getElementById('edit_email').value = email;
+            document.getElementById('edit_phone').value = phone;
+            document.getElementById('edit_role_id').value = roleId;
+            document.getElementById('edit_is_active').value = isActive ? '1' : '0';
+            document.getElementById('editStaffForm').action = '/edit-staff/' + id;
+            document.getElementById('editStaffModal').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

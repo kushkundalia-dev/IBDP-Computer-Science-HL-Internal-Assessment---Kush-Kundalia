@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservations - Hotel KK By Spree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="stars"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="user-role">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('frontdesk_dashboard') }}" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('guests_list') }}" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">All Guests</span>
+                </a>
+                <a href="{{ url_for('reservations_list') }}" class="nav-item active">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Reservations</span>
+                </a>
+                <a href="{{ url_for('rooms_status') }}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Room Status</span>
+                </a>
+                <a href="{{ url_for('reports') }}" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="nav-item logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" style="margin-bottom: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border-left: 3px solid #6366f1; border-radius: 8px; color: #fff;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Reservations</h1>
+                    <p class="page-subtitle">Manage all hotel bookings and reservations</p>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap;">
+                <a href="{{ url_for('reservations_list', filter='active') }}" class="btn {{ 'btn-primary' if filter_type == 'active' else 'btn-secondary' }}">
+                    Active & Upcoming
+                </a>
+                <a href="{{ url_for('reservations_list', filter='today') }}" class="btn {{ 'btn-primary' if filter_type == 'today' else 'btn-secondary' }}">
+                    Today's Activity
+                </a>
+                <a href="{{ url_for('reservations_list', filter='arrivals') }}" class="btn {{ 'btn-primary' if filter_type == 'arrivals' else 'btn-secondary' }}">
+                    Today's Arrivals
+                </a>
+                <a href="{{ url_for('reservations_list', filter='departures') }}" class="btn {{ 'btn-primary' if filter_type == 'departures' else 'btn-secondary' }}">
+                    Today's Departures
+                </a>
+                <a href="{{ url_for('reservations_list', filter='all') }}" class="btn {{ 'btn-primary' if filter_type == 'all' else 'btn-secondary' }}">
+                    All Reservations
+                </a>
+            </div>
+
+            <!-- Reservations Table -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        {% if filter_type == 'active' %}Active & Upcoming Reservations
+                        {% elif filter_type == 'today' %}Today's Activity
+                        {% elif filter_type == 'arrivals' %}Today's Arrivals
+                        {% elif filter_type == 'departures' %}Today's Departures
+                        {% else %}All Reservations
+                        {% endif %}
+                    </h2>
+                    <span style="color: rgba(255,255,255,0.6);">{{ reservations|length }} reservations</span>
+                </div>
+
+                {% if reservations %}
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Reservation Code</th>
+                                <th>Guest</th>
+                                <th>Room</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Nights</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in reservations %}
+                            <tr>
+                                <td>
+                                    <strong style="color: #a5b4fc;">{{ reservation.reservation_code }}</strong>
+                                </td>
+                                <td>
+                                    <div class="guest-name">
+                                        <div class="guest-avatar">{{ reservation.guest.first_name[0] }}{{ reservation.guest.last_name[0] }}</div>
+                                        <div>
+                                            <div>{{ reservation.guest.first_name }} {{ reservation.guest.last_name }}</div>
+                                            <small style="color: rgba(255,255,255,0.5);">{{ reservation.guest.phone }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600;">Room {{ reservation.room.room_number }}</div>
+                                    <small style="color: rgba(255,255,255,0.5);">{{ reservation.room.category.name }}</small>
+                                </td>
+                                <td>
+                                    {{ reservation.check_in_date.strftime('%d %b %Y') }}
+                                    {% if reservation.check_in_date == today %}
+                                    <span class="badge badge-info" style="display: block; margin-top: 5px;">Today</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ reservation.check_out_date.strftime('%d %b %Y') }}
+                                    {% if reservation.check_out_date == today %}
+                                    <span class="badge badge-warning" style="display: block; margin-top: 5px;">Today</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ (reservation.check_out_date - reservation.check_in_date).days }} nights</td>
+                                <td>₹{{ '{:,.0f}'.format(reservation.total_amount) }}</td>
+                                <td>
+                                    {% if reservation.status == 'confirmed' %}
+                                        <span class="badge badge-info">Confirmed</span>
+                                    {% elif reservation.status == 'checked_in' %}
+                                        <span class="badge badge-success">Checked In</span>
+                                    {% elif reservation.status == 'checked_out' %}
+                                        <span class="badge" style="background: rgba(100, 116, 139, 0.2); color: #cbd5e1;">Checked Out</span>
+                                    {% elif reservation.status == 'cancelled' %}
+                                        <span class="badge badge-danger">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ url_for('guest_profile', guest_id=reservation.guest.id) }}" class="btn-icon" title="View Guest">👁️</a>
+                                        
+                                        {% if current_user.can_edit() %}
+                                            {% if reservation.status == 'confirmed' and reservation.check_in_date <= today %}
+                                            <form method="POST" action="{{ url_for('check_in', reservation_id=reservation.id) }}" style="display: inline;">
+                                                <button type="submit" class="btn-icon" title="Check In" style="background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.3); cursor: pointer;">✓</button>
+                                            </form>
+                                            {% elif reservation.status == 'checked_in' and reservation.check_out_date <= today %}
+                                            <form method="POST" action="{{ url_for('check_out', reservation_id=reservation.id) }}" style="display: inline;">
+                                                <button type="submit" class="btn-icon" title="Check Out" style="background: rgba(251, 146, 60, 0.2); border-color: rgba(251, 146, 60, 0.3); cursor: pointer;">→</button>
+                                            </form>
+                                            {% endif %}
+                                            {% if reservation.status in ['confirmed', 'checked_in'] %}
+                                            <a href="{{ url_for('edit_reservation', reservation_id=reservation.id) }}" class="btn-icon" title="Edit">✏️</a>
+                                            <form method="POST" action="{{ url_for('cancel_reservation', reservation_id=reservation.id) }}" style="display: inline;" onsubmit="return confirm('Cancel this reservation?')">
+                                                <button type="submit" class="btn-icon" title="Cancel" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3); cursor: pointer;">✕</button>
+                                            </form>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge badge-warning" style="font-size: 0.75rem;">Off Duty</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <h3>No reservations found</h3>
+                    <p>
+                        {% if filter_type == 'arrivals' %}No guests are checking in today
+                        {% elif filter_type == 'departures' %}No guests are checking out today
+                        {% elif filter_type == 'today' %}No activity scheduled for today
+                        {% else %}No reservations match this filter
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

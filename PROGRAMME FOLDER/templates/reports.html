@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Hotel KK By Spree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="stars"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.first_name }} {{ current_user.last_name }}</div>
+                        <div class="user-role">{{ current_user.role.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('frontdesk_dashboard') }}" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('guests_list') }}" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">All Guests</span>
+                </a>
+                <a href="{{ url_for('reservations_list') }}" class="nav-item">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Reservations</span>
+                </a>
+                <a href="{{ url_for('rooms_status') }}" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Room Status</span>
+                </a>
+                <a href="{{ url_for('reports') }}" class="nav-item active">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="nav-item logout">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Reports & Analytics</h1>
+                    <p class="page-subtitle">Business intelligence and performance metrics</p>
+                </div>
+            </div>
+
+            <!-- Report Type Tabs -->
+            <div class="filters-container">
+                <div class="filter-tabs">
+                    <a href="{{ url_for('reports', type='occupancy', date=selected_date.isoformat()) }}" 
+                       class="filter-tab {% if report_type == 'occupancy' %}active{% endif %}">
+                        <span style="font-size: 1.5rem;">🛌</span>
+                        <span>Occupancy Report</span>
+                    </a>
+                    <a href="{{ url_for('reports', type='revenue') }}" 
+                       class="filter-tab {% if report_type == 'revenue' %}active{% endif %}">
+                        <span style="font-size: 1.5rem;">💰</span>
+                        <span>Revenue Summary</span>
+                    </a>
+                    <a href="{{ url_for('reports', type='arrivals', date=selected_date.isoformat()) }}" 
+                       class="filter-tab {% if report_type == 'arrivals' %}active{% endif %}">
+                        <span style="font-size: 1.5rem;">✈️</span>
+                        <span>Arrivals & Departures</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- OCCUPANCY REPORT -->
+            {% if report_type == 'occupancy' %}
+            <div class="page-content">
+                <!-- Date Selector -->
+                <div class="content-card" style="margin-bottom: 30px;">
+                    <div style="padding: 25px;">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: #e0e7ff;">
+                            <span style="font-size: 1.3rem; margin-right: 8px;">📅</span>
+                            Select Report Date
+                        </h3>
+                        <form method="get" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                            <input type="hidden" name="type" value="occupancy">
+                            <div style="flex: 1; min-width: 200px;">
+                                <input type="date" name="date" value="{{ selected_date.isoformat() }}" 
+                                       class="form-input" 
+                                       style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                                <span style="font-size: 1.2rem; margin-right: 6px;">🔍</span>
+                                Generate Report
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Occupancy Statistics -->
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="stat-icon">
+                            📊
+                        </div>
+                        <div class="stat-details">
+                            <h3>{{ occupancy_data.occupancy_percentage }}%</h3>
+                            <p>Occupancy Rate</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="stat-icon">
+                            🚪
+                        </div>
+                        <div class="stat-details">
+                            <h3>{{ occupancy_data.occupied_rooms }}</h3>
+                            <p>Occupied Rooms</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <div class="stat-icon">
+                            🏠
+                        </div>
+                        <div class="stat-details">
+                            <h3>{{ occupancy_data.available_rooms }}</h3>
+                            <p>Available Rooms</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <div class="stat-icon">
+                            🏨
+                        </div>
+                        <div class="stat-details">
+                            <h3>{{ occupancy_data.total_rooms }}</h3>
+                            <p>Total Rooms</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 Occupancy by Room Category</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Room Category</th>
+                                        <th>Base Price</th>
+                                        <th>Total Rooms</th>
+                                        <th>Occupied</th>
+                                        <th>Available</th>
+                                        <th>Occupancy %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in occupancy_data.category_breakdown %}
+                                    <tr>
+                                        <td><strong>{{ category.name }}</strong></td>
+                                        <td>₹{{ "{:,.2f}".format(category.base_price) }}</td>
+                                        <td>{{ category.total_rooms }}</td>
+                                        <td>{{ category.occupied or 0 }}</td>
+                                        <td>{{ category.total_rooms - (category.occupied or 0) }}</td>
+                                        <td>
+                                            {% set cat_occupancy = ((category.occupied or 0) / category.total_rooms * 100) if category.total_rooms > 0 else 0 %}
+                                            <span class="badge {% if cat_occupancy >= 80 %}badge-danger{% elif cat_occupancy >= 50 %}badge-warning{% else %}badge-success{% endif %}">
+                                                {{ "%.1f"|format(cat_occupancy) }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- REVENUE REPORT -->
+            {% if report_type == 'revenue' %}
+            <div class="page-content">
+                <!-- Date Range Selector -->
+                <div class="content-card" style="margin-bottom: 30px;">
+                    <div style="padding: 25px;">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: #e0e7ff;">
+                            <span style="font-size: 1.3rem; margin-right: 8px;">🗓️</span>
+                            Select Date Range
+                        </h3>
+                        <form method="get" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+                            <input type="hidden" name="type" value="revenue">
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a5b4fc; font-weight: 500;">Start Date</label>
+                                <input type="date" name="start_date" 
+                                       value="{{ revenue_data.start_date.isoformat() if revenue_data.start_date else '' }}" 
+                                       class="form-input" 
+                                       style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #a5b4fc; font-weight: 500;">End Date</label>
+                                <input type="date" name="end_date" 
+                                       value="{{ revenue_data.end_date.isoformat() if revenue_data.end_date else '' }}" 
+                                       class="form-input" 
+                                       style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                                <span style="font-size: 1.2rem; margin-right: 6px;">🔍</span>
+                                Generate Report
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Revenue Statistics -->
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <div class="stat-icon">
+                            💵
+                        </div>
+                        <div class="stat-details">
+                            <h3>₹{{ "{:,.2f}".format(revenue_data.total_revenue) }}</h3>
+                            <p>Total Revenue</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+                        <div class="stat-icon">
+                            📅
+                        </div>
+                        <div class="stat-details">
+                            <h3>{{ revenue_data.total_bookings }}</h3>
+                            <p>Total Bookings</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="stat-icon">
+                            📈
+                        </div>
+                        <div class="stat-details">
+                            <h3>₹{{ "{:,.2f}".format(revenue_data.adr) }}</h3>
+                            <p>Avg Daily Rate (ADR)</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="stat-icon">
+                            💰
+                        </div>
+                        <div class="stat-details">
+                            <h3>₹{{ "{:,.2f}".format(revenue_data.revpar) }}</h3>
+                            <p>RevPAR</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue by Category -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 Revenue by Room Category</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Room Category</th>
+                                        <th>Bookings</th>
+                                        <th>Total Revenue</th>
+                                        <th>Avg per Booking</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in revenue_data.category_revenue %}
+                                    <tr>
+                                        <td><strong>{{ category.name }}</strong></td>
+                                        <td>{{ category.bookings }}</td>
+                                        <td>₹{{ "{:,.2f}".format(category.revenue) }}</td>
+                                        <td>₹{{ "{:,.2f}".format(category.revenue / category.bookings) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not revenue_data.category_revenue %}
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; color: #999;">No revenue data for selected period</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ARRIVALS & DEPARTURES REPORT -->
+            {% if report_type == 'arrivals' %}
+            <div class="page-content">
+                <!-- Date Selector -->
+                <div class="content-card" style="margin-bottom: 30px;">
+                    <div style="padding: 25px;">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: #e0e7ff;">
+                            <span style="font-size: 1.3rem; margin-right: 8px;">📅</span>
+                            Select Report Date
+                        </h3>
+                        <form method="get" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                            <input type="hidden" name="type" value="arrivals">
+                            <div style="flex: 1; min-width: 200px;">
+                                <input type="date" name="date" value="{{ selected_date.isoformat() }}" 
+                                       class="form-input" 
+                                       style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; width: 100%;">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="padding: 14px 32px; font-weight: 600; border-radius: 12px;">
+                                <span style="font-size: 1.2rem; margin-right: 6px;">🔍</span>
+                                Generate Report
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Arrivals -->
+                <div class="card" style="margin-bottom: 25px;">
+                    <div class="card-header">
+                        <h3>✈️ Arrivals ({{ arrivals|length }})</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Guest Name</th>
+                                        <th>Room</th>
+                                        <th>Reservation Code</th>
+                                        <th>Check-In</th>
+                                        <th>Check-Out</th>
+                                        <th>Guests</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reservation in arrivals %}
+                                    <tr>
+                                        <td>
+                                            <div class="guest-name">
+                                                <div class="guest-avatar">
+                                                    {{ reservation.guest.first_name[0] }}{{ reservation.guest.last_name[0] }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ reservation.guest.first_name }} {{ reservation.guest.last_name }}</strong><br>
+                                                    <small style="color: #666;">{{ reservation.guest.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><strong>{{ reservation.room.room_number }}</strong></td>
+                                        <td><code>{{ reservation.reservation_code }}</code></td>
+                                        <td>{{ reservation.check_in_date.strftime('%d %b %Y') }}</td>
+                                        <td>{{ reservation.check_out_date.strftime('%d %b %Y') }}</td>
+                                        <td>{{ reservation.num_adults }}A + {{ reservation.num_children }}C</td>
+                                        <td>
+                                            <span class="badge {% if reservation.status == 'checked_in' %}badge-success{% else %}badge-warning{% endif %}">
+                                                {{ reservation.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not arrivals %}
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; color: #999;">No arrivals for this date</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Departures -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🛫 Departures ({{ departures|length }})</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Guest Name</th>
+                                        <th>Room</th>
+                                        <th>Reservation Code</th>
+                                        <th>Check-In</th>
+                                        <th>Check-Out</th>
+                                        <th>Guests</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reservation in departures %}
+                                    <tr>
+                                        <td>
+                                            <div class="guest-name">
+                                                <div class="guest-avatar">
+                                                    {{ reservation.guest.first_name[0] }}{{ reservation.guest.last_name[0] }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ reservation.guest.first_name }} {{ reservation.guest.last_name }}</strong><br>
+                                                    <small style="color: #666;">{{ reservation.guest.email }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><strong>{{ reservation.room.room_number }}</strong></td>
+                                        <td><code>{{ reservation.reservation_code }}</code></td>
+                                        <td>{{ reservation.check_in_date.strftime('%d %b %Y') }}</td>
+                                        <td>{{ reservation.check_out_date.strftime('%d %b %Y') }}</td>
+                                        <td>{{ reservation.num_adults }}A + {{ reservation.num_children }}C</td>
+                                        <td>
+                                            <span class="badge {% if reservation.status == 'checked_in' %}badge-warning{% else %}badge-success{% endif %}">
+                                                {{ reservation.status|title }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not departures %}
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; color: #999;">No departures for this date</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Room - Hotel KK By Spree</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="stars"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🏨</span>
+                <span class="logo-text">Hotel KK By Spree</span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+                <a href="#" class="nav-link">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <div style="padding-top: 100px; max-width: 1200px; margin: 0 auto; padding-left: 40px; padding-right: 40px;">
+        <div class="page-header" style="text-align: center;">
+            <div>
+                <h1 class="page-title">Book Your Stay</h1>
+                <p class="page-subtitle">Choose from our premium room categories</p>
+            </div>
+        </div>
+
+        <!-- Room Categories -->
+        <div class="stats-grid" style="margin-bottom: 50px;">
+            {% for category in categories %}
+            <div class="stat-card" style="cursor: pointer;" onclick="selectRoom('{{ category.id }}', '{{ category.name }}', {{ category.base_price }})">
+                <div class="stat-header">
+                    <span class="stat-label">{{ category.name }}</span>
+                    <span class="stat-icon">🛏️</span>
+                </div>
+                <div class="stat-value" style="font-size: 2rem;">₹{{ '{:,.0f}'.format(category.base_price) }}</div>
+                <div class="stat-change">per night</div>
+                <div style="margin-top: 15px; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                    <div>📏 {{ category.size_sqm }} m²</div>
+                    <div>👥 Max {{ category.max_adults }} adults{% if category.max_children > 0 %}, {{ category.max_children }} child{% endif %}</div>
+                </div>
+                {% if category.description %}
+                <p style="margin-top: 10px; color: rgba(255,255,255,0.6); font-size: 0.85rem;">{{ category.description }}</p>
+                {% endif %}
+                <button class="btn btn-primary" style="margin-top: 15px; width: 100%;">Select Room</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Booking Form -->
+        <div class="content-card" id="bookingForm" style="display: none; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+            <div class="card-header" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2)); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <h2 class="card-title" style="font-size: 1.8rem; font-weight: 700; color: #fff; text-align: center; margin: 0;">✨ Complete Your Booking</h2>
+            </div>
+
+            <form method="POST" action="{{ url_for('guest_booking') }}" style="padding: 40px;">
+                <input type="hidden" id="selectedCategory" name="category_id">
+                
+                <!-- Selected Room Summary -->
+                <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15)); padding: 25px; border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <span style="font-size: 2rem; margin-right: 12px;">🛏️</span>
+                        <h3 style="color: #fff; margin: 0; font-size: 1.2rem; font-weight: 600;">Selected Room</h3>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center;">
+                        <div>
+                            <div style="color: #a5b4fc; font-size: 1.8rem; font-weight: 700; margin-bottom: 5px;" id="selectedRoomName"></div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.95rem;">Premium accommodation with modern amenities</div>
+                        </div>
+                        <div style="text-align: right; background: rgba(99, 102, 241, 0.2); padding: 15px 25px; border-radius: 15px;">
+                            <div style="color: #fff; font-size: 2.2rem; font-weight: 800; line-height: 1;" id="selectedRoomPrice"></div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-top: 5px;">per night</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guest Information Section -->
+                <div style="margin-bottom: 35px;">
+                    <h3 style="color: #fff; font-size: 1.3rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center;">
+                        <span style="margin-right: 10px;">👤</span> Guest Information
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">First Name *</label>
+                            <input type="text" name="first_name" class="form-input" required placeholder="Enter your first name" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">Last Name *</label>
+                            <input type="text" name="last_name" class="form-input" required placeholder="Enter your last name" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center;">
+                                <span style="margin-right: 6px;">📧</span> Email Address
+                            </label>
+                            <input type="email" name="email" class="form-input" placeholder="your.email@example.com" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center;">
+                                <span style="margin-right: 6px;">📱</span> Phone Number *
+                            </label>
+                            <input type="tel" name="phone" class="form-input" required placeholder="Enter your phone number" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reservation Details Section -->
+                <div style="margin-bottom: 35px;">
+                    <h3 style="color: #fff; font-size: 1.3rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center;">
+                        <span style="margin-right: 10px;">📅</span> Reservation Details
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">Check-in Date *</label>
+                            <input type="date" name="check_in" class="form-input" required style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s; color-scheme: dark;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: block;">Check-out Date *</label>
+                            <input type="date" name="check_out" class="form-input" required style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s; color-scheme: dark;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center;">
+                                <span style="margin-right: 6px;">👥</span> Number of Adults *
+                            </label>
+                            <input type="number" name="num_adults" class="form-input" value="1" min="1" required style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center;">
+                                <span style="margin-right: 6px;">👶</span> Number of Children
+                            </label>
+                            <input type="number" name="num_children" class="form-input" value="0" min="0" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Requests Section -->
+                <div class="form-group" style="margin-bottom: 40px;">
+                    <label class="form-label" style="color: #a5b4fc; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; font-size: 1.05rem;">
+                        <span style="margin-right: 10px;">💬</span> Special Requests (Optional)
+                    </label>
+                    <textarea name="special_requests" class="form-input" rows="4" placeholder="Any special requests or preferences (e.g., room location, extra pillows, early check-in)..." style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 1rem; transition: all 0.3s; resize: vertical; min-height: 100px;"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 1.1rem; padding: 16px 32px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; border-radius: 15px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">
+                        🎉 Complete Booking
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelSelection()" style="padding: 16px 32px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        Cancel
+                    </button>
+                </div>
+
+                <p style="text-align: center; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; margin-top: 25px;">
+                    🔒 Your information is secure and will only be used for your reservation
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function selectRoom(categoryId, roomName, price) {
+            document.getElementById('selectedCategory').value = categoryId;
+            document.getElementById('selectedRoomName').textContent = roomName;
+            document.getElementById('selectedRoomPrice').textContent = '₹' + price.toLocaleString('en-IN');
+            document.getElementById('bookingForm').style.display = 'block';
+            document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelSelection() {
+            document.getElementById('bookingForm').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkInInput = document.querySelector('input[name="check_in"]');
+            const checkOutInput = document.querySelector('input[name="check_out"]');
+            
+            if (checkInInput) {
+                checkInInput.setAttribute('min', today);
+                checkInInput.addEventListener('change', function() {
+                    checkOutInput.setAttribute('min', this.value);
+                });
+            }
+        });
+    </script>
+
+    <style>
+        /* Enhanced form input styles */
+        .form-input:hover {
+            border-color: rgba(139, 92, 246, 0.4) !important;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.6) !important;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5) !important;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        /* Smooth animations */
+        .form-input, .btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Form grid responsive */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Number input styling */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+            height: 40px;
+        }
+
+        /* Textarea styling */
+        textarea.form-input {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Date input styling */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+    </style>
+
+    <footer class="footer" style="margin-top: 80px;">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="logo-icon">🏨</span>
+                    <span class="logo-text">Hotel KK By Spree</span>
+                </div>
+                <p>Unit No 56, Kalawad Road, near Kotecha Circle, Kailash Nagar, Rajkot, Gujarat 360007</p>
+                <p>Phone: 095120 20653</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Hotel KK By Spree Rajkot. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
